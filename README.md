@@ -7,7 +7,7 @@ FireEye released State of the Hack S4E02: Weaponizing Office Documents with VBA 
 
 ### Usage Example
 Return trusted macro-enabled docs that were opened from within the Outlook temporary files folder:
-    Get-TrustedMacroDocs -Application All | Where -Path Like '%USERPROFILE%/AppData/Local/Microsoft/Windows/Temporary Internet Files/Content.Outlook/*'
+    ``Get-TrustedMacroDocs -Application All | Where -Path Like '%USERPROFILE%/AppData/Local/Microsoft/Windows/Temporary Internet Files/Content.Outlook/*'``
 
 ## Future Plans
 - Example script for Intune deployment and result consolidation in Azure Blob Storage
