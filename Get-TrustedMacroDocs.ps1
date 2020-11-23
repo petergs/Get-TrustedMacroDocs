@@ -15,7 +15,8 @@
     #>
     [OutputType([hashtable])]
     param (
-        [parameter()][string][ValidateSet('All', 'Excel', 'Word', 'Powerpoint', 'Publisher')] $Application = 'All'
+        [parameter()][string][ValidateSet('All', 'Excel', 'Word', 'Powerpoint', 'Publisher')] $Application = 'All',
+        [parameter()][string][ValidateSet('None', 'Detailed')] $DetailLevel = 'None'
     )
 
     # Sequence of bytes at the end of the registry value's REG_BINARY Data field that indicates the file has been trusted
@@ -34,21 +35,16 @@
 
     foreach ($version in $officeVersions) {
         foreach ($app in $apps) {
-            try {
-                $(Get-ItemProperty -Path "Registry::$($version)\$($app)\Security\Trusted Documents\TrustRecords" -ErrorAction SilentlyContinue).PSObject.Properties | Where TypeNameOfValue -eq System.Byte[] | 
-                foreach { 
-                    $comp = Compare-Object $_.Value[-4, -3, -2, -1] $trustedByteSeq -PassThru
-                    if ( $comp -eq $null )  {
-                        [PSCustomObject]@{
-                            Path          = [System.Web.HttpUtility]::UrlDecode($_.Name)
-                            Application   = $app 
-                            OfficeVersion = $version.Split('\')[-1]
-                        }
+            $files = $(Get-ItemProperty -Path "Registry::$($version)\$($app)\Security\Trusted Documents\TrustRecords" -ErrorAction SilentlyContinue).PSObject.Properties | Where TypeNameOfValue -eq System.Byte[]
+            foreach ($file in $files) { 
+                $comp = Compare-Object $_.Value[-4, -3, -2, -1] $trustedByteSeq -PassThru
+                if ( $comp -eq $null )  {
+                    [PSCustomObject]@{
+                        Path          = [System.Web.HttpUtility]::UrlDecode($file.Name)
+                        Application   = $app 
+                        OfficeVersion = $version.Split('\')[-1]
                     }
                 }
-            }
-            catch {
-        
             }
         }
     }        
