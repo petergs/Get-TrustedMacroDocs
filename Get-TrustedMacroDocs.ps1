@@ -1,7 +1,7 @@
 ﻿function Get-TrustedMacroDocs {
     <#
     .SYNOPSIS
-        Gets a list of the macro-enabled documents that have been trusted.
+        Gets a list of the macro-enabled documents that have been trusted in Office.
     .DESCRIPTION
         Gets a list of the macro-enabled documents that have been trusted. It accesses the registry
         hives at HKEY_CURRENT_USER\SOFTWARE\Microsoft\Office\{OfficeVersion}\{Application}. 
@@ -13,7 +13,7 @@
     .LINK
         https://github.com/petergs/Get-TrustedMacroDocs
     #>
-    [OutputType([hashtable])]
+    [OutputType([object])]
     param (
         [parameter()][string][ValidateSet('All', 'Excel', 'Word', 'Powerpoint', 'Publisher')] $Application = 'All',
         [parameter()][string][ValidateSet('None', 'Detailed')] $DetailLevel = 'None'
@@ -37,10 +37,10 @@
         foreach ($app in $apps) {
             $files = $(Get-ItemProperty -Path "Registry::$($version)\$($app)\Security\Trusted Documents\TrustRecords" -ErrorAction SilentlyContinue).PSObject.Properties | Where TypeNameOfValue -eq System.Byte[]
             foreach ($file in $files) { 
-                $comp = Compare-Object $_.Value[-4, -3, -2, -1] $trustedByteSeq -PassThru
+                $comp = Compare-Object $file.Value[-4, -3, -2, -1] $trustedByteSeq -PassThru
                 if ( $comp -eq $null )  {
                     [PSCustomObject]@{
-                        Path          = [System.Web.HttpUtility]::UrlDecode($file.Name)
+                        Path          = $file.Name
                         Application   = $app 
                         OfficeVersion = $version.Split('\')[-1]
                     }
